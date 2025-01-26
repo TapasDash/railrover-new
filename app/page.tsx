@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
 import { AutocompleteInput } from "@/components/AutocompleteInput";
 import { Train, Search } from "lucide-react";
-import { extractCode } from "./trains/page";
 
 const stations = [
   "New Delhi (NDLS)",
@@ -46,13 +45,13 @@ export default function Home() {
         <form onSubmit={handleSearch} className="space-y-4 mb-8">
           <AutocompleteInput
             placeholder="From Station"
-            value={extractCode(fromStation)}
+            value={fromStation}
             onChange={setFromStation}
             stations={stations}
           />
           <AutocompleteInput
             placeholder="To Station"
-            value={extractCode(toStation)}
+            value={toStation}
             onChange={setToStation}
             stations={stations}
           />

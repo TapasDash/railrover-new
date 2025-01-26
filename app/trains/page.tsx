@@ -8,6 +8,7 @@ import axios from "axios";
 import { Train } from "lucide-react";
 import { ArrowRight, Clock } from "lucide-react";
 import RunningDays from "@/components/RunningDays";
+import { extractCode } from "@/utils/utils";
 
 // Sample data for trains
 const sampleTrains = [
@@ -47,12 +48,7 @@ const sampleTrains = [
     duration: "21h 50m",
   },
 ];
-export const extractCode = (str: string) => {
-  const startIndex = str.indexOf("(") + 1;
-  const endIndex = str.indexOf(")");
-  const code = str.substring(startIndex, endIndex);
-  return code;
-};
+
 export default function Trains() {
   const { fromStation, toStation, trains, setTrains } = useAppContext();
   const getTrainBetweenStations = async (
