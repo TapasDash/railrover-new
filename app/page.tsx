@@ -70,7 +70,7 @@ export default function Home() {
           Check PNR Status
         </Button>
       </div>
-      <Navigation showTrains={Boolean(trains.length)} />
+      <Navigation />
     </main>
   );
 }

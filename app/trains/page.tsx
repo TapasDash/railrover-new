@@ -6,6 +6,7 @@ import RunningDays from "@/components/RunningDays";
 import { extractCode } from "@/utils/utils";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/Modal";
+import TrainLoadingAnimation from "@/components/TrainLoadingAnimation";
 
 async function getTrains(fromStation: string, toStation: string) {
   let res: any = await fetch(
@@ -74,112 +75,124 @@ export default function Trains() {
         >
           Available Trains
         </h1>
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-        >
-          {trains.map((train: any) => (
-            <div
-              key={train.trainNo}
-              style={{
-                backgroundColor: "white",
-                borderRadius: "0.75rem",
-                boxShadow:
-                  "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-                padding: "1.5rem",
-                position: "relative",
-              }}
-            >
+        {isLoading ? (
+          <TrainLoadingAnimation />
+        ) : error ? (
+          <div style={{ textAlign: "center", padding: "2rem", color: "red" }}>
+            {error}
+          </div>
+        ) : trains.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "2rem" }}>
+            No trains found for the selected route.
+          </div>
+        ) : (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+          >
+            {trains.map((train: any) => (
               <div
+                key={train.trainNo}
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  alignItems: "center",
+                  backgroundColor: "white",
+                  borderRadius: "0.75rem",
+                  boxShadow:
+                    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  padding: "1.5rem",
+                  position: "relative",
                 }}
               >
-                {/* Left Station */}
-                <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "1.5rem",
-                      fontWeight: "bold",
-                      color: "#374151",
-                    }}
-                  >
-                    {train.fromStationCode}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.875rem",
-                      color: "#6b7280",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    {train.fromStationName}
-                  </div>
-                  <div style={{ fontSize: "1.125rem", fontWeight: "600" }}>
-                    {train.fromTime}
-                  </div>
-                </div>
-
-                {/* Center - Train Details */}
                 <div
                   style={{
-                    textAlign: "center",
-                    display: "flex",
-                    flexDirection: "column",
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
                     alignItems: "center",
-                    gap: "0.5rem",
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: "1.25rem",
-                      fontWeight: "bold",
-                      color: "#374151",
-                    }}
-                  >
-                    {train.trainNo}
+                  {/* Left Station */}
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontSize: "1.5rem",
+                        fontWeight: "bold",
+                        color: "#374151",
+                      }}
+                    >
+                      {train.sourceStationCode}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.875rem",
+                        color: "#6b7280",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      {train.sourceStationName}
+                    </div>
+                    <div style={{ fontSize: "1.125rem", fontWeight: "600" }}>
+                      {train.fromTime}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontSize: "0.875rem",
-                      fontWeight: "500",
-                      color: "#6b7280",
-                    }}
-                  >
-                    {train.trainName}
-                  </div>
-                  <RunningDays runningDays={train.runningDays} />
-                </div>
 
-                {/* Right Station */}
-                <div style={{ textAlign: "center" }}>
+                  {/* Center - Train Details */}
                   <div
                     style={{
-                      fontSize: "1.5rem",
-                      fontWeight: "bold",
-                      color: "#374151",
+                      textAlign: "center",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "0.5rem",
                     }}
                   >
-                    {train.toStationCode}
+                    <div
+                      style={{
+                        fontSize: "1.25rem",
+                        fontWeight: "bold",
+                        color: "#374151",
+                      }}
+                    >
+                      {train.trainNo}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.875rem",
+                        fontWeight: "500",
+                        color: "#6b7280",
+                      }}
+                    >
+                      {train.trainName}
+                    </div>
+                    <RunningDays runningDays={train.runningDays} />
                   </div>
-                  <div
-                    style={{
-                      fontSize: "0.875rem",
-                      color: "#6b7280",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    {train.toStationName}
-                  </div>
-                  <div style={{ fontSize: "1.125rem", fontWeight: "600" }}>
-                    {train.toTime}
+
+                  {/* Right Station */}
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontSize: "1.5rem",
+                        fontWeight: "bold",
+                        color: "#374151",
+                      }}
+                    >
+                      {train.destinationStationCode}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.875rem",
+                        color: "#6b7280",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      {train.destinationStationName}
+                    </div>
+                    <div style={{ fontSize: "1.125rem", fontWeight: "600" }}>
+                      {train.toTime}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
       <Navigation />
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
