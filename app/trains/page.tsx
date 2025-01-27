@@ -1,81 +1,58 @@
 "use client";
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppContext } from "@/context/AppContext";
-import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
-import axios from "axios";
-import { Train } from "lucide-react";
-import { ArrowRight, Clock } from "lucide-react";
 import RunningDays from "@/components/RunningDays";
 import { extractCode } from "@/utils/utils";
+import { useRouter } from "next/navigation";
+import Modal from "@/components/Modal";
 
-// Sample data for trains
-const sampleTrains = [
-  {
-    number: "12301",
-    name: "Rajdhani Express",
-    departure: "22:00",
-    arrival: "10:00",
-    duration: "12h 00m",
-  },
-  {
-    number: "12259",
-    name: "Sealdah Duronto",
-    departure: "20:30",
-    arrival: "07:00",
-    duration: "10h 30m",
-  },
-  {
-    number: "12302",
-    name: "New Delhi Rajdhani",
-    departure: "16:50",
-    arrival: "10:00",
-    duration: "17h 10m",
-  },
-  {
-    number: "12951",
-    name: "Mumbai Rajdhani",
-    departure: "16:55",
-    arrival: "08:15",
-    duration: "15h 20m",
-  },
-  {
-    number: "12303",
-    name: "Poorva Express",
-    departure: "20:40",
-    arrival: "18:30",
-    duration: "21h 50m",
-  },
-];
+async function getTrains(fromStation: string, toStation: string) {
+  let res: any = await fetch(
+    `${process.env.NEXT_PUBLIC_TRAIN_TIMETABLE_URL}/from/${fromStation}/to/${toStation}`,
+    {
+      next: { revalidate: 3600 },
+    }
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch trains");
+  }
+  res = await res.json();
+  console.log({ res });
+  return res?.trains;
+}
 
 export default function Trains() {
   const { fromStation, toStation, trains, setTrains } = useAppContext();
-  const getTrainBetweenStations = async (
-    fromStation: string,
-    toStation: string
-  ) => {
-    console.log("getTrainBetweenStations", { fromStation, toStation });
-    console.log("new env--->", process.env.NEXT_PUBLIC_TRAIN_TIMETABLE_URL);
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_TRAIN_TIMETABLE_URL}/from/${fromStation}/to/${toStation}`
-    ); // { stationCode: fromStation, destinationStation: toStation }
-    console.log({ response });
-    console.log("---->", response.data);
-    return response?.data?.trains;
-  };
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchTrains = async () => {
-      console.log("fetchTrains", { fromStation, toStation });
-      const trains = await getTrainBetweenStations(
-        extractCode(fromStation),
-        extractCode(toStation)
-      );
-      setTrains(trains || []);
-    };
-    fetchTrains();
+    if (fromStation === "" || toStation === "") {
+      router.push("/");
+    } else if (fromStation && toStation) {
+      setIsLoading(true);
+      setError(null);
+      getTrains(extractCode(fromStation), extractCode(toStation))
+        .then((trains) => {
+          setTrains(trains);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          setError(error.message);
+          setIsLoading(false);
+        });
+    } else {
+      setIsModalOpen(true);
+    }
   }, [fromStation, toStation, setTrains]);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    router.push("/");
+  };
 
   return (
     <main
@@ -128,7 +105,7 @@ export default function Trains() {
                       color: "#374151",
                     }}
                   >
-                    {train.sourceStationCode}
+                    {train.fromStationCode}
                   </div>
                   <div
                     style={{
@@ -137,7 +114,7 @@ export default function Trains() {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    {train.sourceStationName}
+                    {train.fromStationName}
                   </div>
                   <div style={{ fontSize: "1.125rem", fontWeight: "600" }}>
                     {train.fromTime}
@@ -172,10 +149,7 @@ export default function Trains() {
                   >
                     {train.trainName}
                   </div>
-                  <RunningDays
-                    runningDays={train.runningDays}
-                    key={train._id}
-                  />
+                  <RunningDays runningDays={train.runningDays} />
                 </div>
 
                 {/* Right Station */}
@@ -187,7 +161,7 @@ export default function Trains() {
                       color: "#374151",
                     }}
                   >
-                    {train.destinationStationCode}
+                    {train.toStationCode}
                   </div>
                   <div
                     style={{
@@ -196,7 +170,7 @@ export default function Trains() {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    {train.destinationStationName}
+                    {train.toStationName}
                   </div>
                   <div style={{ fontSize: "1.125rem", fontWeight: "600" }}>
                     {train.toTime}
@@ -208,6 +182,20 @@ export default function Trains() {
         </div>
       </div>
       <Navigation />
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+        <h2
+          style={{
+            fontSize: "1.25rem",
+            fontWeight: "bold",
+            marginBottom: "1rem",
+          }}
+        >
+          Station Selection Required
+        </h2>
+        <p>
+          Please select both "From" and "To" stations before viewing trains.
+        </p>
+      </Modal>
     </main>
   );
 }

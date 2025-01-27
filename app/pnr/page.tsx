@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
-import axios from "axios";
 import {
   Ticket,
   Train,
@@ -22,13 +21,27 @@ export default function PNRStatus() {
   const { pnrNumber, setPnrNumber, pnrStatus, setPnrStatus } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    const savedPNRStatus = localStorage.getItem("pnrStatus");
+    if (savedPNRStatus) {
+      setPnrStatus(JSON.parse(savedPNRStatus));
+    }
+  }, [setPnrStatus]);
+
   const getPNRStatus = async (pnrNumber: string) => {
     setIsLoading(true);
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_PNR_URL}/pnr/${pnrNumber}`
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_PNR_URL}/pnr/${pnrNumber}`,
+        {
+          cache: "no-store", // This ensures we don't use any caching for PNR status
+        }
       );
-      return response?.data?.data;
+      if (!response.ok) {
+        throw new Error("Failed to fetch PNR status");
+      }
+      const data = await response.json();
+      return data.data;
     } catch (error) {
       console.error("Error fetching PNR status:", error);
       alert("Failed to fetch PNR status. Please try again.");
@@ -46,6 +59,7 @@ export default function PNRStatus() {
     }
     const pnrStatus = await getPNRStatus(pnr);
     setPnrStatus(pnrStatus);
+    localStorage.setItem("pnrStatus", JSON.stringify(pnrStatus));
   };
 
   const handleRefresh = () => {
@@ -57,6 +71,7 @@ export default function PNRStatus() {
   const handleDelete = () => {
     setPnrStatus(null);
     setPnrNumber("");
+    localStorage.removeItem("pnrStatus");
   };
 
   return (

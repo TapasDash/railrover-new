@@ -5,11 +5,10 @@ import { useAppContext } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
 import { AutocompleteInput } from "@/components/AutocompleteInput";
-import { Train, Search } from "lucide-react";
+import { ArrowRight, Train, Search } from "lucide-react";
 
 const stations = [
   "New Delhi (NDLS)",
-  "Bhubaneswar (BBS)",
   "Mumbai Central (MMCT)",
   "Howrah Junction (HWH)",
   "Chennai Central (MAS)",
@@ -27,7 +26,7 @@ const stations = [
 ];
 
 export default function Home() {
-  const { fromStation, toStation, setFromStation, setToStation } =
+  const { fromStation, toStation, setFromStation, setToStation, trains } =
     useAppContext();
   const router = useRouter();
 
@@ -71,7 +70,7 @@ export default function Home() {
           Check PNR Status
         </Button>
       </div>
-      <Navigation />
+      <Navigation showTrains={Boolean(trains.length)} />
     </main>
   );
 }

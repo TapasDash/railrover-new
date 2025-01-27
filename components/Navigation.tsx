@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Train, Search } from "lucide-react";
 
-export function Navigation() {
+export function Navigation({ showTrains = false }: { showTrains?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -19,15 +19,17 @@ export function Navigation() {
           <Home size={24} />
           <span className="text-xs mt-1">Home</span>
         </Link>
-        <Link
-          href="/trains"
-          className={`flex flex-col items-center p-4 ${
-            pathname === "/trains" ? "text-blue-600" : "text-gray-600"
-          }`}
-        >
-          <Train size={24} />
-          <span className="text-xs mt-1">Trains</span>
-        </Link>
+        {showTrains && (
+          <Link
+            href="/trains"
+            className={`flex flex-col items-center p-4 ${
+              pathname === "/trains" ? "text-blue-600" : "text-gray-600"
+            }`}
+          >
+            <Train size={24} />
+            <span className="text-xs mt-1">Trains</span>
+          </Link>
+        )}
         <Link
           href="/pnr"
           className={`flex flex-col items-center p-4 ${
