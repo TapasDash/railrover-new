@@ -5,6 +5,7 @@ import { useAppContext } from "@/context/AppContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
+import TrainLoadingAnimation from "@/components/TrainLoadingAnimation";
 import {
   Ticket,
   Train,
@@ -57,9 +58,22 @@ export default function PNRStatus() {
       alert("Please enter a valid 10-digit PNR number.");
       return;
     }
-    const pnrStatus = await getPNRStatus(pnr);
-    setPnrStatus(pnrStatus);
-    localStorage.setItem("pnrStatus", JSON.stringify(pnrStatus));
+
+    // Remove previous PNR status from local storage only if it matches the new PNR number
+    const savedPNRStatus = localStorage.getItem("pnrStatus");
+    if (savedPNRStatus) {
+      const savedStatus = JSON.parse(savedPNRStatus);
+      if (savedStatus.Pnr === pnr) {
+        localStorage.removeItem("pnrStatus");
+        setPnrStatus(null);
+      }
+    }
+
+    const newPnrStatus = await getPNRStatus(pnr);
+    setPnrStatus(newPnrStatus);
+    if (newPnrStatus) {
+      localStorage.setItem("pnrStatus", JSON.stringify(newPnrStatus));
+    }
   };
 
   const handleRefresh = () => {
@@ -96,7 +110,9 @@ export default function PNRStatus() {
             {isLoading ? "Checking..." : "Check Status"}
           </Button>
         </form>
-        {pnrStatus && (
+        {isLoading ? (
+          <TrainLoadingAnimation />
+        ) : pnrStatus ? (
           <div className="bg-white rounded-lg shadow-md p-4 relative">
             <button
               onClick={handleDelete}
@@ -180,7 +196,7 @@ export default function PNRStatus() {
               </div>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
       <Navigation />
     </main>
